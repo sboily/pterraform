@@ -44,9 +44,11 @@ class Terraform(dict):
             raise(Exception("Manifest file not found.  Must have a *.tf or *.tf.json file to feed to Terraform."))
 
     def generate_vars_file(self):
+        if self.variables is None:
+            return
         with open(os.path.join(self.manifestdir, 'override.tf.json'), 'w') as vars_file:
             json.dump(self.variables, vars_file)
-        vars_file.close()
+
 
     def remove_tmp_manifest(self):
         if os.path.isdir(self.tmpdir):
