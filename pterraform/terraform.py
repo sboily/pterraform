@@ -68,9 +68,12 @@ class Terraform(dict):
         p.stdout.close()
         return output
 
-    def destroy(self):
+    def destroy(self, target=None):
         self.current_stats = {}
-        cmd = "terraform destroy -input=false -force -state=" + self.state_path  + " " + self.manifestdir
+        cmd = "terraform destroy -input=false -force -state=" + self.state_path
+        if target is not None:
+            cmd += " -target=" + target
+        cmd += " " + self.manifestdir
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, shell=True)
         output = self.parse_output(p)
         p.stdout.close()
