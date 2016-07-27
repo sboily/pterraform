@@ -4,7 +4,13 @@ import shutil
 import os
 import json
 import subprocess
+from subprocess import PIPE
+import logging
 from subprocess import check_output
+
+
+logger = logging.getLogger(__name__)
+
 
 class Terraform(dict):
     def __init__(self, source_manifest_path, variables=None):
@@ -76,7 +82,7 @@ class Terraform(dict):
         if target is not None:
             cmd += " -target=" + target
         cmd += " " + self.manifestdir
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, shell=True)
+        p = subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, bufsize=1, shell=True)
         output = self.parse_output(p)
         p.stdout.close()
         return output
@@ -86,7 +92,8 @@ class Terraform(dict):
             "start_times": {},
             "durations": {}
         }
-        for line in iter(process.stdout.readline, b''):
+        while process.poll() is None:
+            line = process.stdout.readline()
             if "Creating..." in line or "Destroying..." in line:
                 object_name = line.split(": ")[0].replace('\x1b[0m\x1b[1m','')
                 retval['start_times'][object_name] = datetime.utcnow()
@@ -97,6 +104,11 @@ class Terraform(dict):
                 print line.strip() + ", with duration " + str(retval['durations'][object_name]) + "\n"
             else:
                 print line
+
+        stdout, stderr = process.communicate()
+        if process.returncode != 0:
+            print "Error!!!\n{}".format(stdout)
+            raise RuntimeError(stderr)
         return retval
 
     def parse_variables(self, variables):
