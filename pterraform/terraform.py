@@ -78,7 +78,7 @@ class Terraform(dict):
     def apply(self):
         self.current_stats = {}
         cmd = ['terraform', 'apply', '-input=false', '-state={}'.format(self.state_path), self.manifestdir]
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, env=self.set_env_for_user())
+        p = subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, bufsize=1, env=self.set_env_for_user())
         output = self.parse_output(p)
         p.stdout.close()
         return output
@@ -88,7 +88,7 @@ class Terraform(dict):
         cmd = ['terraform', 'destroy', '-force', '-input=false', '-state={}'.format(self.state_path), self.manifestdir]
         if target is not None:
             cmd.insert(5, " -target={}".format(target))
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, env=self.set_env_for_user())
+        p = subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, bufsize=1, env=self.set_env_for_user())
         output = self.parse_output(p)
         p.stdout.close()
         return output
