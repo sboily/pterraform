@@ -70,21 +70,25 @@ class Terraform(dict):
             state_file.close()
         return retval
 
+    def set_env_for_user(self):
+        new_env = dict(os.environ)
+        new_env['HOME'] = '/tmp'
+        return new_env
+
     def apply(self):
         self.current_stats = {}
-        cmd = "terraform apply -input=false -state=" + self.state_path  + " " + self.manifestdir
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, shell=True)
+        cmd = ['terraform', 'apply', '-input=false', '-state={}'.format(self.state_path), self.manifestdir]
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, env=self.set_env_for_user())
         output = self.parse_output(p)
         p.stdout.close()
         return output
 
     def destroy(self, target=None):
         self.current_stats = {}
-        cmd = "terraform destroy -input=false -force -state=" + self.state_path
+        cmd = ['terraform', 'destroy', '-input=false', '-state={}'.format(self.state_path), self.manifestdir]
         if target is not None:
-            cmd += " -target=" + target
-        cmd += " " + self.manifestdir
-        p = subprocess.Popen(cmd, stdout=PIPE, stderr=PIPE, bufsize=1, shell=True)
+            cmd.insert(4, " -target={}".format(target))
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=1, env=self.set_env_for_user())
         output = self.parse_output(p)
         p.stdout.close()
         return output
