@@ -10,7 +10,7 @@ You can point terraform to a single Terraform file, OR you can point it to the t
 
 Here is an example of how to use it:
 ```
-import pterraform
+from pterraform.terraform import Terraform
 
 variables = {
   "auth_url": "http://127.0.0.1:5000/v2.0",
