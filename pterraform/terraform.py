@@ -13,11 +13,13 @@ logger = logging.getLogger(__name__)
 
 
 class Terraform(dict):
-    def __init__(self, source_manifest_path, variables=None):
+    def __init__(self, source_manifest_path, variables=None. tmpdir=None):
         self.name = os.path.basename(source_manifest_path).split(".")[0]
         self.object_id = str(uuid.uuid4())
         self.source_manifest_path = source_manifest_path
-        self.tmpdir = os.path.join(".", "." + self.object_id)
+        if not tmpdir:
+            tmpdir = '.'
+        self.tmpdir = os.path.join(tmpdir, "." + self.object_id)
         self.manifestdir = os.path.join(self.tmpdir, self.name)
         self.state_path = os.path.join(self.manifestdir, "terraform.tfstate")
         self.variables = self.parse_variables(variables)
